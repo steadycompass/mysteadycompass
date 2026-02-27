@@ -456,9 +456,12 @@ if df is not None and len(df) > 0:
             template="plotly_white",
             height=500,
             margin=dict(t=50, b=50),
+            dragmode=False,
         )
+        fig.update_xaxes(fixedrange=True)
+        fig.update_yaxes(fixedrange=True)
         fig.update_traces(line=dict(color="#2563eb", width=1.5))
-        st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=True, displaylogo=False))
+        st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=True, displaylogo=False, scrollZoom=False))
     else:
         st.warning("Plotly is not installed. Install with: `pip install plotly`")
     st.markdown(
@@ -687,9 +690,11 @@ if cost_df is not None and len(cost_df) > 0 and px is not None:
         height=420,
         template="plotly_white",
         yaxis_tickformat="$,.0f",
+        dragmode=False,
     )
-    fig.update_xaxes(tickfont=dict(size=11))
-    st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=True, displaylogo=False))
+    fig.update_xaxes(fixedrange=True, tickfont=dict(size=11))
+    fig.update_yaxes(fixedrange=True)
+    st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=True, displaylogo=False, scrollZoom=False))
     st.markdown(
         "*The best rallies often come right after the worst selloffs. "
         "Jumping in and out of the market is like trying to dodge lightning and getting struck instead.*"
@@ -739,8 +744,11 @@ if win_df is not None and len(win_df) > 0 and px is not None:
         margin=dict(t=50, b=60),
         height=420,
         template="plotly_white",
+        dragmode=False,
     )
-    st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=True, displaylogo=False))
+    fig.update_xaxes(fixedrange=True)
+    fig.update_yaxes(fixedrange=True)
+    st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=True, displaylogo=False, scrollZoom=False))
 elif win_df is None or len(win_df) == 0:
     st.info("Rolling win-rate data could not be loaded. Please try again later.")
 else:

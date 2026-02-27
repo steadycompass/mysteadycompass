@@ -199,8 +199,11 @@ if data_20y is not None and _plotly_ok:
             xaxis_title="", yaxis_title="Value",
             margin=dict(t=50, b=70), height=380, template="plotly_white",
             showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.12, xanchor="center", x=0.5),
+            dragmode=False,
         )
-        st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
+        fig.update_xaxes(fixedrange=True)
+        fig.update_yaxes(fixedrange=True)
+        st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False, scrollZoom=False))
 
         # Drawdown chart: current portfolio vs S&P 500 (100% stocks) — bonds soften the fall
         # Plot drawdown as negative (0 at top, down into negative %); classic upside-down drawdown
@@ -213,8 +216,11 @@ if data_20y is not None and _plotly_ok:
             xaxis_title="", yaxis_title="Drawdown %",
             margin=dict(t=50, b=70), height=300, template="plotly_white",
             yaxis=dict(range=[-55, 0], tickvals=[0, -10, -20, -30, -40, -50], tickformat=".0f"), showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5),
+            dragmode=False,
         )
-        st.plotly_chart(fig2, use_container_width=True, config=dict(displayModeBar=False))
+        fig2.update_xaxes(fixedrange=True)
+        fig2.update_yaxes(fixedrange=True)
+        st.plotly_chart(fig2, use_container_width=True, config=dict(displayModeBar=False, scrollZoom=False))
 
         # MDD by allocation: show how bonds improve (reduce) MDD
         mdd_by_stock = []
@@ -240,8 +246,11 @@ if data_20y is not None and _plotly_ok:
             margin=dict(t=50, b=95), height=320, template="plotly_white",
             xaxis=dict(dtick=10), yaxis=dict(range=[-55, 0], tickvals=[0, -10, -20, -30, -40, -50], tickformat=".0f"),
             showlegend=True, legend=dict(orientation="h", yanchor="top", y=-0.28, xanchor="center", x=0.5),
+            dragmode=False,
         )
-        st.plotly_chart(fig3, use_container_width=True, config=dict(displayModeBar=False))
+        fig3.update_xaxes(fixedrange=True)
+        fig3.update_yaxes(fixedrange=True)
+        st.plotly_chart(fig3, use_container_width=True, config=dict(displayModeBar=False, scrollZoom=False))
 
         st.markdown("---")
         st.markdown("**Bogle's Wisdom: Why add bonds even if it lowers return?**")
@@ -355,8 +364,11 @@ if _plotly_ok:
         template="plotly_white",
         legend=dict(orientation="h", yanchor="top", y=1.02, xanchor="center", x=0.5),
         yaxis_tickformat="$,.0f",
+        dragmode=False,
     )
-    st.plotly_chart(fig_drip, use_container_width=True, config=dict(displayModeBar=False))
+    fig_drip.update_xaxes(fixedrange=True)
+    fig_drip.update_yaxes(fixedrange=True)
+    st.plotly_chart(fig_drip, use_container_width=True, config=dict(displayModeBar=False, scrollZoom=False))
 
 st.markdown("**Compass tip:** Many index ETFs (e.g. VOO, VTI) let you turn on automatic dividend reinvestment in your broker account. Set it once and stay the course.")
 st.divider()
@@ -404,8 +416,11 @@ if _plotly_ok:
         template="plotly_white",
         legend=dict(orientation="h", yanchor="top", y=-0.22, x=0.5, xanchor="center"),
         yaxis_tickformat="$,.0f",
+        dragmode=False,
     )
-    st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
+    fig.update_xaxes(fixedrange=True)
+    fig.update_yaxes(fixedrange=True)
+    st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False, scrollZoom=False))
 
 st.metric("Final value", f"${value_series[-1]:,.0f}", f"Principal ${principal_series[-1]:,.0f} + growth ${value_series[-1] - principal_series[-1]:,.0f}")
 st.caption("Try 40+ years to see retirement or early-start impact.")
@@ -455,8 +470,11 @@ if _plotly_ok:
         title="Tax rates (same scale 0–30%)",
         yaxis_title="Rate (%)", margin=dict(t=40, b=60), height=280, template="plotly_white",
         showlegend=False, yaxis=dict(range=[0, 30], dtick=5),
+        dragmode=False,
     )
-    st.plotly_chart(fig_rates, use_container_width=True, config=dict(displayModeBar=False))
+    fig_rates.update_xaxes(fixedrange=True)
+    fig_rates.update_yaxes(fixedrange=True)
+    st.plotly_chart(fig_rates, use_container_width=True, config=dict(displayModeBar=False, scrollZoom=False))
 
     y_max = max(final_a, final_b)
     fig = go.Figure(data=[
@@ -467,8 +485,11 @@ if _plotly_ok:
         yaxis_title="Final amount ($)", margin=dict(t=80, b=60), height=380, template="plotly_white",
         showlegend=False, yaxis_tickformat="$,.0f",
         yaxis=dict(range=[0, y_max * 1.18]),
+        dragmode=False,
     )
-    st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
+    fig.update_xaxes(fixedrange=True)
+    fig.update_yaxes(fixedrange=True)
+    st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False, scrollZoom=False))
 
 st.caption(f"**A:** ${final_a:,.0f} (after LTCG). **B:** ${final_b:,.0f}. Friction (tax + fees) costs B **${final_a - final_b:,.0f}**.")
 

@@ -576,6 +576,7 @@ def make_gauge_figure(value, axis_range, steps, title, number_suffix=""):
         paper_bgcolor="rgba(0,0,0,0)",
         font={"family": "Segoe UI, sans-serif", "color": "#334155"},
         showlegend=False,
+        dragmode=False,
     )
     return fig
 
@@ -1523,7 +1524,7 @@ def home_page():
         unsafe_allow_html=True,
     )
     gauge_header_css = "gauge-header-block"
-    gauge_config = {"displayModeBar": False}
+    gauge_config = {"displayModeBar": False, "scrollZoom": False}
     c1, c2, c3 = st.columns(3)
 
     with c1:

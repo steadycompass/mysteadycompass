@@ -163,9 +163,11 @@ if cost_df is not None and _plotly_ok and len(cost_df) > 0:
         showlegend=False, xaxis_tickangle=-25, margin=dict(t=72, b=70), height=320,
         template="plotly_white", yaxis_tickformat="$,.0f",
         yaxis=dict(range=[0, y_max * 1.18]),
+        dragmode=False,
     )
-    fig.update_xaxes(tickfont=dict(size=10))
-    st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False))
+    fig.update_xaxes(fixedrange=True, tickfont=dict(size=10))
+    fig.update_yaxes(fixedrange=True)
+    st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False, scrollZoom=False))
     st.caption("$10,000 invested in S&P 500 over the past 20 years. Full chart on **Market** → Time in the Market.")
 else:
     st.caption("Chart data unavailable here. See **Market** → Time in the Market for the full chart.")
@@ -197,12 +199,12 @@ if _plotly_ok:
     fig_col1, fig_col2 = st.columns(2)
     with fig_col1:
         fig1 = go.Figure(data=[go.Pie(labels=["You keep", "Lost to fees"], values=[keep_i, cost_i], hole=0.5, marker_colors=["#16a34a", "#dc2626"])])
-        fig1.update_layout(title=f"Index-style ({fee_index*100:.2f}% fee) · {YEARS}y", margin=dict(t=40, b=20), height=280, showlegend=True, legend=dict(orientation="h"))
-        st.plotly_chart(fig1, use_container_width=True, config=dict(displayModeBar=False))
+        fig1.update_layout(title=f"Index-style ({fee_index*100:.2f}% fee) · {YEARS}y", margin=dict(t=40, b=20), height=280, showlegend=True, legend=dict(orientation="h"), dragmode=False)
+        st.plotly_chart(fig1, use_container_width=True, config=dict(displayModeBar=False, scrollZoom=False))
     with fig_col2:
         fig2 = go.Figure(data=[go.Pie(labels=["You keep", "Lost to fees"], values=[keep_a, cost_a], hole=0.5, marker_colors=["#16a34a", "#dc2626"])])
-        fig2.update_layout(title=f"Active-style ({fee_active*100:.2f}% fee) · {YEARS}y", margin=dict(t=40, b=20), height=280, showlegend=True, legend=dict(orientation="h"))
-        st.plotly_chart(fig2, use_container_width=True, config=dict(displayModeBar=False))
+        fig2.update_layout(title=f"Active-style ({fee_active*100:.2f}% fee) · {YEARS}y", margin=dict(t=40, b=20), height=280, showlegend=True, legend=dict(orientation="h"), dragmode=False)
+        st.plotly_chart(fig2, use_container_width=True, config=dict(displayModeBar=False, scrollZoom=False))
 else:
     st.info(f"Index ({fee_index*100:.2f}%): You keep {keep_i:.1f}% · Active ({fee_active*100:.2f}%): You keep {keep_a:.1f}%. Install plotly for pie charts.")
 st.caption('Bogle: "The more the financial system takes, the less you keep."')
@@ -216,9 +218,10 @@ if _plotly_ok:
     stages = ["Optimism", "Thrill", "Euphoria", "Complacency", "Anxiety", "Denial", "Fear", "Panic", "Capitulation", "Despair"]
     y = [2, 4, 6, 5, 3, 1, -1, -3, -5, -4]
     fig3 = go.Figure(data=[go.Scatter(x=list(range(len(stages))), y=y, mode="lines+text", line=dict(color="#5a6378", width=2), text=stages, textposition="top center")])
-    fig3.update_layout(xaxis=dict(showticklabels=False), yaxis_title="Emotion", margin=dict(t=50, b=40), height=320, template="plotly_white", showlegend=False)
-    fig3.update_xaxes(zeroline=True, zerolinewidth=1, zerolinecolor="#e2e8f0")
-    st.plotly_chart(fig3, use_container_width=True, config=dict(displayModeBar=False))
+    fig3.update_layout(xaxis=dict(showticklabels=False), yaxis_title="Emotion", margin=dict(t=50, b=40), height=320, template="plotly_white", showlegend=False, dragmode=False)
+    fig3.update_xaxes(zeroline=True, zerolinewidth=1, zerolinecolor="#e2e8f0", fixedrange=True)
+    fig3.update_yaxes(fixedrange=True)
+    st.plotly_chart(fig3, use_container_width=True, config=dict(displayModeBar=False, scrollZoom=False))
 st.caption("When everyone is euphoric, you’re often buying high. When everyone has capitulated, the best opportunities appear.")
 
 st.divider()

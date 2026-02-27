@@ -1,0 +1,24 @@
+---
+description: Section titles and heading styles — where to define and what to use
+globs: **/app.py, **/components/nav.py, **/pages/*.py
+alwaysApply: false
+---
+
+# Heading and title styles (The Steady Compass)
+
+## Two kinds of headings
+
+1. **Section titles** (e.g. "Today's Market Dashboard", "Market Temperature")
+   - **Markup**: Always use `<div class="section-heading">Title text</div>` with `st.markdown(..., unsafe_allow_html=True)`.
+   - **Style**: Define and edit only in **`components/nav.py`** inside `inject_nav_css()` as `.section-heading` (e.g. `font-size: 1.35rem !important`).
+   - Do **not** add new CSS for section title size in `app.py` or in random `<style>` blocks; it will be inconsistent or overridden.
+
+2. **Small block headers** (e.g. above gauges: "Fear & Greed", "200-Day Disparity")
+   - Use the existing class **`.gauge-header-block`** (or similar) and keep its styles in the same file where the block is rendered (e.g. the `<style>` block just above the gauges in `app.py`).
+
+## When adding or changing a section title
+
+- Use the **same** `<div class="section-heading">...</div>` pattern.
+- To change the **size or weight** of all section titles, edit **only** `components/nav.py` → `inject_nav_css()` → `.section-heading`.
+
+This keeps one source of truth and avoids "style changes not applying" after multiple attempts.

@@ -1,0 +1,8 @@
+streamlit>=1.37.0
+pandas>=2.0.0
+plotly>=5.0.0
+# Prefer new SDK (google-genai); fallback to google-generativeai
+google-genai>=1.0.0
+google-generativeai>=0.8.0
+yfinance>=0.2.0
+streamlit-autorefresh>=0.0.1

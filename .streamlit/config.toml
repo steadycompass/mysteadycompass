@@ -1,0 +1,4 @@
+# The Steady Compass - Top navigation only; sidebar reserved for future submenus
+[client]
+# Hide default multipage links from sidebar (main nav is the top bar)
+showSidebarNavigation = false

@@ -1,0 +1,17 @@
+# The Steady Compass - Project rules
+
+## Language: English-only site (mandatory)
+- **This site is an English-language product.** All user-facing content must be in English only.
+- Never add Korean, Japanese, or other non-English text to: page titles, section headings, captions, labels, buttons, messages, or any text visible to users.
+- When implementing features, write all UI strings and headings in English. If you are given Korean text to implement, translate it to English for the actual site.
+
+## Zero cost: design so the site incurs no API or service cost
+- The site must run without paid APIs or subscriptions. Prefer free tiers only.
+- Use only free data sources (e.g. yfinance). Do not add News API, Alpha Vantage, or other paid news/finance APIs.
+- Use Groq free tier for AI (e.g. Weekly Signal). Run at most once per day; keep prompts short and output small (e.g. 3 items, max ~120 words per item) to stay within free limits.
+- Do not introduce features that require paid API keys or would exceed free-tier usage (e.g. high-frequency calls, large token usage). When in doubt, choose the option that keeps cost at zero.
+
+## Site language: English only (reiterated)
+- This site is an **English-only** product. All user-facing text must be in English.
+- Do not add Korean, Japanese, or any other language to: UI labels, titles, captions, AI prompts (respond in English), placeholders, or fallback strings.
+- When adding or changing features, keep all copy and AI output in English.

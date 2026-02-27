@@ -1,0 +1,23 @@
+# API keys and secrets — never commit
+.streamlit/secrets.toml
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+
+# Cached data (optional; app can regenerate)
+.streamlit/weekly_signal_last.json
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

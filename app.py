@@ -695,6 +695,7 @@ def get_current_sea_display(state, is_divergence, f_g, disparity, breadth):
 _weekly_signal_gemini_cache = {}  # bucket_date_str -> (markdown_table_str, timestamp)
 _WEEKLY_SIGNAL_CACHE_TTL = 86400  # 24h for success
 _WEEKLY_SIGNAL_LAST_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".streamlit", "weekly_signal_last.json")
+_WEEKLY_SIGNAL_DEFAULT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".streamlit", "weekly_signal_default.json")
 
 # Macro keyword weights: Fed +5, Inflation +4, Recession +4, etc. Used to score and rank news.
 MACRO_KEYWORDS_WEIGHTED = [
@@ -1048,27 +1049,34 @@ def get_weekly_signal_gemini_table(bucket_date_str):
 
 def _load_last_weekly_signal():
     """
-    Load the last Weekly Signal from disk (table + headlines, or headlines only if Gemini had failed).
-    Returns (table_md or None, saved_at_iso, headlines). Headlines are kept even when Gemini failed.
+    Load the last Weekly Signal from disk (table + headlines). If no saved run exists, load default
+    so the deployed app always shows something (e.g. first deploy or after restart).
+    Returns (table_md or None, saved_at_iso, headlines). headlines = list of up to 3 strings.
     """
-    try:
-        if not os.path.isfile(_WEEKLY_SIGNAL_LAST_FILE):
+    def _read_file(path):
+        try:
+            if not path or not os.path.isfile(path):
+                return (None, None, [])
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            table_md = (data.get("table_md") or "").strip()
+            if table_md and "|" not in table_md:
+                table_md = None
+            saved_at = data.get("saved_at") or ""
+            headlines = data.get("headlines")
+            if not isinstance(headlines, list) or len(headlines) < 3:
+                headlines = []
+            else:
+                headlines = [str(h) for h in headlines[:3]]
+            return (table_md if table_md else None, saved_at, headlines)
+        except Exception:
             return (None, None, [])
-        with open(_WEEKLY_SIGNAL_LAST_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        table_md = (data.get("table_md") or "").strip()
-        if table_md and "|" not in table_md:
-            table_md = None
-        saved_at = data.get("saved_at") or ""
-        headlines = data.get("headlines")
-        if not isinstance(headlines, list) or len(headlines) < 3:
-            headlines = []
-        else:
-            headlines = [str(h) for h in headlines[:3]]
-        return (table_md if table_md else None, saved_at, headlines)
-    except Exception:
-        pass
-    return (None, None, [])
+
+    last_md, saved_at, headlines = _read_file(_WEEKLY_SIGNAL_LAST_FILE)
+    if last_md or (saved_at and headlines):
+        return (last_md, saved_at, headlines)
+    # No saved run (e.g. first deploy, or ephemeral server): use default so something is always shown
+    return _read_file(_WEEKLY_SIGNAL_DEFAULT_FILE)
 
 
 def _test_gemini_connection_sdk():
@@ -1679,7 +1687,10 @@ def home_page():
     else:
         last_md, last_saved_at, last_headlines = _load_last_weekly_signal()
         if last_md:
-            caption_parts.append("**AI temporarily unavailable** — showing last saved edition. Previous content is kept so the signal is never lost.")
+            if last_saved_at:
+                caption_parts.append("**AI temporarily unavailable** — showing last saved edition. Previous content is kept so the signal is never lost.")
+            else:
+                caption_parts.append("**Sample edition.** The first run (around 7 PM ET) will replace this with live headlines and analysis.")
             if last_saved_at:
                 try:
                     dt = datetime.fromisoformat(last_saved_at.replace("Z", "+00:00"))

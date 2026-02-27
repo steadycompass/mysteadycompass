@@ -411,15 +411,15 @@ if _plotly_ok:
     fig.update_layout(
         title=f"Future value after {years} years",
         xaxis_title="Years", yaxis_title="Amount ($)",
+        xaxis=dict(fixedrange=True),
+        yaxis=dict(fixedrange=True, tickformat="$,.0f"),
         margin=dict(t=56, b=88),
         height=400,
         template="plotly_white",
         legend=dict(orientation="h", yanchor="top", y=-0.22, x=0.5, xanchor="center"),
-        yaxis_tickformat="$,.0f",
         dragmode=False,
+        uirevision="future-value-lock",
     )
-    fig.update_xaxes(fixedrange=True)
-    fig.update_yaxes(fixedrange=True)
     st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=False, scrollZoom=False))
 
 st.metric("Final value", f"${value_series[-1]:,.0f}", f"Principal ${principal_series[-1]:,.0f} + growth ${value_series[-1] - principal_series[-1]:,.0f}")

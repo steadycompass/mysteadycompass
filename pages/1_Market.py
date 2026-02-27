@@ -682,14 +682,16 @@ if cost_df is not None and len(cost_df) > 0 and px is not None:
         marker_color=colors,
         hovertemplate="%{x}<br>Final value: $%{y:,.0f}<extra></extra>",
     )
+    y_max = cost_df["final_value"].max()
     fig.update_layout(
         showlegend=False,
         xaxis_tickangle=-25,
         yaxis_title="Final value (unit: $)",
-        margin=dict(t=40, b=80),
+        margin=dict(t=64, b=80),
         height=420,
         template="plotly_white",
         yaxis_tickformat="$,.0f",
+        yaxis=dict(range=[0, y_max * 1.18]),
         dragmode=False,
     )
     fig.update_xaxes(fixedrange=True, tickfont=dict(size=11))

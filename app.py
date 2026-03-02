@@ -1743,10 +1743,14 @@ def home_page():
             table_content = last_md
         else:
             caption_parts.append(
-                "**AI temporarily unavailable** — showing headlines we fetched; analysis will return when the API is available (e.g. after quota reset)."
+                "**Temporary:** Showing this week's headlines; full analysis returns when the API is available."
             )
             if err_msg:
-                caption_parts.append(f"Error: {err_msg}")
+                if "429" in err_msg or "quota" in err_msg.lower() or "limit" in err_msg.lower():
+                    caption_parts.append("API quota reached; will retry after 7 PM ET.")
+                else:
+                    short_err = (err_msg[:120] + "…") if len(err_msg) > 120 else err_msg
+                    caption_parts.append(f"Error: {short_err}")
             # Use headlines from this run, or last saved, so we always show the 3 news items when we have them
             show_headlines = headlines if (headlines and any(h and h != "—" for h in headlines)) else last_headlines
             if show_headlines and len(show_headlines) >= 3:

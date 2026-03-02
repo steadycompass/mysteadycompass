@@ -697,6 +697,14 @@ _weekly_signal_gemini_cache = {}  # bucket_date_str -> (markdown_table_str, time
 _WEEKLY_SIGNAL_CACHE_TTL = 86400  # 24h for success
 _WEEKLY_SIGNAL_LAST_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".streamlit", "weekly_signal_last.json")
 _WEEKLY_SIGNAL_DEFAULT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".streamlit", "weekly_signal_default.json")
+# Inline fallback when default JSON is missing (e.g. deploy without file). Same as weekly_signal_default.json.
+_WEEKLY_SIGNAL_SAMPLE_TABLE = (
+    "| Category (Signal/Noise) | Headline | Compass View |\n"
+    "|--------------------------|----------|--------------------------------|\n"
+    "| Signal | Market moves in the short term. | Stay the course; focus on your long-term plan. |\n"
+    "| Signal | News can be noise. | Stay diversified; don't react to headlines. |\n"
+    "| Noise | Daily volatility. | Turn off the screen; check back at 7 PM ET for the next edition. |"
+)
 
 # Macro keyword weights: Fed +5, Inflation +4, Recession +4, etc. Used to score and rank news.
 MACRO_KEYWORDS_WEIGHTED = [
@@ -1076,8 +1084,11 @@ def _load_last_weekly_signal():
     last_md, saved_at, headlines = _read_file(_WEEKLY_SIGNAL_LAST_FILE)
     if last_md or (saved_at and headlines):
         return (last_md, saved_at, headlines)
-    # No saved run (e.g. first deploy, or ephemeral server): use default so something is always shown
-    return _read_file(_WEEKLY_SIGNAL_DEFAULT_FILE)
+    # No saved run (e.g. first deploy, or ephemeral server): use default file, or inline sample if file missing
+    default_md, default_saved_at, default_headlines = _read_file(_WEEKLY_SIGNAL_DEFAULT_FILE)
+    if default_md:
+        return (default_md, default_saved_at or "", default_headlines)
+    return (_WEEKLY_SIGNAL_SAMPLE_TABLE, "", ["Market moves in the short term.", "News can be noise.", "Daily volatility."])
 
 
 def _test_gemini_connection_sdk():
@@ -1720,7 +1731,7 @@ def home_page():
         ws_inner = (
             f'<div style="text-align:center; margin-bottom:0.5rem;"><strong>🧭 {ws_title}</strong></div>'
             f'<div style="text-align:center; font-size:0.85rem; color:#64748b;">{ws_date_range}</div>'
-            f'<div style="text-align:center; font-size:0.8rem; color:#94a3b8; margin-bottom:0.75rem;">Edition: {edition_str} · Updated once daily · 3 distinct topics (past week) · Analysis: Gemini</div>'
+            f'<div style="text-align:center; font-size:0.8rem; color:#94a3b8; margin-bottom:0.75rem;">Edition: {edition_str} · Updated once daily at 7 PM ET with the 3 most important stories from the past week · Analysis: Gemini</div>'
             f'{caption_html}'
             '<div class="weekly-signal-table-wrap">\n\n' + table_content + '\n\n</div>'
         )

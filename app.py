@@ -959,11 +959,17 @@ def get_weekly_signal_gemini_table(bucket_date_str):
     """
     Fetch macro news → pick 3 diverse → send to Gemini. Returns (markdown_table_str, error_msg, headlines, success_ts).
     success_ts = Unix timestamp when table was last generated (from cache or API); None if failed. headlines = list of 3 strings.
+    Uses in-memory cache, then saved file for this bucket, so Gemini is called at most once per day (7 PM ET bucket).
     """
     now_ts = time.time()
     cached = _weekly_signal_gemini_cache.get(bucket_date_str)
     if cached and (now_ts - cached[1]) < _WEEKLY_SIGNAL_CACHE_TTL:
         return (cached[0], None, cached[2] if len(cached) > 2 else [], cached[1])
+    # If we already have today's result on disk (e.g. from an earlier run), use it and skip API — saves quota
+    saved_md, saved_headlines = _get_weekly_signal_for_bucket(bucket_date_str)
+    if saved_md:
+        _weekly_signal_gemini_cache[bucket_date_str] = (saved_md, now_ts, saved_headlines)
+        return (saved_md, None, saved_headlines, now_ts)
     try:
         api_key = st.secrets["GEMINI_API_KEY"]
     except Exception:
@@ -1054,6 +1060,31 @@ def get_weekly_signal_gemini_table(bucket_date_str):
             last_error = str(e) or type(e).__name__
             continue
     return (None, last_error or "Gemini returned no table", headlines, None)
+
+
+def _get_weekly_signal_for_bucket(bucket_date_str):
+    """
+    If we already have a saved Weekly Signal for this bucket (same day), return it so we skip Gemini.
+    Returns (table_md, headlines) or (None, []) so we call API at most once per day per bucket.
+    """
+    try:
+        if not _WEEKLY_SIGNAL_LAST_FILE or not os.path.isfile(_WEEKLY_SIGNAL_LAST_FILE):
+            return (None, [])
+        with open(_WEEKLY_SIGNAL_LAST_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if (data.get("bucket_str") or "") != bucket_date_str:
+            return (None, [])
+        table_md = (data.get("table_md") or "").strip()
+        if not table_md or "|" not in table_md:
+            return (None, [])
+        headlines = data.get("headlines")
+        if not isinstance(headlines, list) or len(headlines) < 3:
+            headlines = []
+        else:
+            headlines = [str(h) for h in headlines[:3]]
+        return (table_md, headlines)
+    except Exception:
+        return (None, [])
 
 
 def _load_last_weekly_signal():

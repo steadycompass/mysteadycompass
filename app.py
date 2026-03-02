@@ -1712,17 +1712,31 @@ def home_page():
             table_content = last_md
         else:
             caption_parts.append(
-                "**AI temporarily unavailable.** Check GEMINI_API_KEY in .streamlit/secrets.toml and that google-generativeai is installed: pip install google-generativeai"
+                "**AI temporarily unavailable** — showing headlines we fetched; analysis will return when the API is available (e.g. after quota reset)."
             )
             if err_msg:
                 caption_parts.append(f"Error: {err_msg}")
-            table_content = (
-                "| Category (Signal/Noise) | Headline | Compass View |\n"
-                "|--------------------------|----------|--------------------------------|\n"
-                "| Signal | — | Stay the course. |\n"
-                "| Signal | — | Stay diversified. |\n"
-                "| Noise | — | Turn off the screen. |"
-            )
+            # Use headlines from this run, or last saved, so we always show the 3 news items when we have them
+            show_headlines = headlines if (headlines and any(h and h != "—" for h in headlines)) else last_headlines
+            if show_headlines and len(show_headlines) >= 3:
+                def _esc(s):
+                    return (s or "").replace("|", " ").replace("\n", " ").strip() or "—"
+                h1, h2, h3 = _esc(show_headlines[0]), _esc(show_headlines[1]), _esc(show_headlines[2])
+                table_content = (
+                    "| Category (Signal/Noise) | Headline | Compass View |\n"
+                    "|--------------------------|----------|--------------------------------|\n"
+                    f"| Signal | {h1} | Stay the course; focus on the long term. |\n"
+                    f"| Signal | {h2} | Stay diversified; don't react to headlines. |\n"
+                    f"| Noise | {h3} | Turn off the screen; check back after 7 PM ET. |"
+                )
+            else:
+                table_content = (
+                    "| Category (Signal/Noise) | Headline | Compass View |\n"
+                    "|--------------------------|----------|--------------------------------|\n"
+                    "| Signal | — | Stay the course. |\n"
+                    "| Signal | — | Stay diversified. |\n"
+                    "| Noise | — | Turn off the screen. |"
+                )
 
     if table_content:
         caption_html = "".join(

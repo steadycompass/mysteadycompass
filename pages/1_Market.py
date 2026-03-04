@@ -751,6 +751,11 @@ if win_df is not None and len(win_df) > 0 and px is not None:
     fig.update_xaxes(fixedrange=True)
     fig.update_yaxes(fixedrange=True)
     st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=True, displaylogo=False, scrollZoom=False))
+    st.caption(
+        "Rolling windows: each bar is the % of all overlapping periods (since 1950) with a positive return. "
+        "3Y and 5Y can be close or occasionally 5Y slightly lower depending on which cycles (e.g. 2008) fall inside the windows; "
+        "the trend remains: 10Y and 20Y are much higher, and no 20Y holder lost money."
+    )
 elif win_df is None or len(win_df) == 0:
     st.info("Rolling win-rate data could not be loaded. Please try again later.")
 else:

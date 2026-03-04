@@ -133,12 +133,17 @@ def get_1day_data():
             chg_pct.append(round(pct, 2))
             tickers_ok.append(t)
 
-            # This month MTD: (latest - close at start of this month) / start * 100
-            mask_this = hist["_date"] >= this_start
-            if not mask_this.any():
-                this_month_pct.append(None)
+            # This month MTD: use last close of previous month as baseline so we include the first trading day (e.g. Mar 2) even if yfinance omits it
+            mask_prev_end = hist["_date"] <= last_end
+            if not mask_prev_end.any():
+                mask_this = hist["_date"] >= this_start
+                if not mask_this.any():
+                    this_month_pct.append(None)
+                else:
+                    start_close = float(close.loc[mask_this].iloc[0])
+                    this_month_pct.append(round((latest - start_close) / start_close * 100.0, 2))
             else:
-                start_close = float(close.loc[mask_this].iloc[0])
+                start_close = float(close.loc[mask_prev_end].iloc[-1])
                 this_month_pct.append(round((latest - start_close) / start_close * 100.0, 2))
 
             # Last month: (close at end of last month - close at start of last month) / start * 100

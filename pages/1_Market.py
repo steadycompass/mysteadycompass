@@ -157,7 +157,7 @@ def _render_annual_returns_histogram():
                 textposition="inside",
                 insidetextanchor="middle",
                 textangle=0,
-                textfont=dict(size=13),
+                textfont=dict(size=11),
                 showlegend=False,
                 marker_color=color,
                 hovertemplate="Year: %{customdata[0]}<br>Return: %{customdata[1]:.2f}%<extra></extra>",
@@ -181,9 +181,9 @@ def _render_annual_returns_histogram():
         height=height,
         margin=dict(t=60, b=110, l=50, r=40),
         dragmode=False,
-        uniformtext=dict(mode="show", minsize=11),
+        uniformtext=dict(mode="show", minsize=10),
     )
-    fig.update_traces(textfont=dict(size=13), selector=dict(type="bar"))
+    fig.update_traces(textfont=dict(size=11), selector=dict(type="bar"))
     fig.update_xaxes(fixedrange=True)
     fig.update_yaxes(fixedrange=True)
     st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=True, displaylogo=False, scrollZoom=False, responsive=True))

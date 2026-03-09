@@ -246,8 +246,9 @@ def inject_nav_css():
         [data-testid="stExpander"] summary {{ min-height: 44px !important; display: flex !important; align-items: center !important; padding: 0.5rem 0 !important; }}
         .main .block-container {{ overflow-x: hidden !important; }}
         .main p, .main .stCaption, .main [data-testid="stMarkdown"] {{ word-wrap: break-word !important; overflow-wrap: break-word !important; }}
+        .js-plotly-plot {{ width: 100% !important; }}
         .js-plotly-plot .svg-container {{ max-width: 100% !important; }}
-        [data-testid="stPlotlyChart"] {{ overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; }}
+        [data-testid="stPlotlyChart"] {{ width: 100% !important; max-height: 82vh !important; overflow-x: hidden !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; touch-action: pan-y !important; }}
     }}
     @media (max-width: 380px) {{
         .nav-title-text {{ font-size: 1rem !important; }}

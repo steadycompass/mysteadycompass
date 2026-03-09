@@ -14,8 +14,10 @@ from components.nav import inject_nav_css, render_nav, render_footer, maybe_redi
 # If plotly is not installed, run: pip install plotly
 try:
     import plotly.express as px
+    import plotly.graph_objects as go
 except ImportError:
-    px = None  # UI will show install message: pip install plotly
+    px = None
+    go = None
 
 import yfinance as yf
 import pandas as pd
@@ -61,6 +63,130 @@ def _fetch_sp500_history():
         return df.dropna()
     except Exception:
         return None
+
+
+# 10% bins: left (negative) -40+ ... -0%~-10%, then 0%~10% ... 40+ (right, positive)
+_ANNUAL_RETURN_BINS = [-np.inf, -40, -30, -20, -10, 0, 10, 20, 30, 40, np.inf]
+_ANNUAL_RETURN_BIN_LABELS = [
+    "-40%+", "-30%+", "-20%+", "-10%+", "-0%~-10%", "0%~10%",
+    "10%+", "20%+", "30%+", "40%+",
+]
+
+
+@st.cache_data(ttl=86400)
+def _fetch_sp500_annual_returns():
+    """
+    Fetch ^GSPC (S&P 500) full history via yfinance and compute annual returns (1928–present).
+    Returns DataFrame with columns: year, return_pct, bucket_label.
+    """
+    try:
+        ticker = yf.Ticker("^GSPC")
+        hist = ticker.history(period="max", auto_adjust=True)
+        if hist is None or hist.empty or len(hist) < 252:
+            return None
+        close = hist["Close"].copy()
+        close.index = pd.to_datetime(close.index)
+        if close.index.tz is not None:
+            close = close.tz_localize(None)
+        close = close.sort_index()
+        year_end = close.resample("Y").last().dropna()
+        if len(year_end) < 2:
+            return None
+        ret_pct = year_end.pct_change().dropna() * 100.0
+        df = pd.DataFrame({"year": ret_pct.index.year, "return_pct": ret_pct.values})
+        df["bucket_label"] = pd.cut(
+            df["return_pct"],
+            bins=_ANNUAL_RETURN_BINS,
+            labels=_ANNUAL_RETURN_BIN_LABELS,
+            include_lowest=True,
+        ).astype(str)
+        return df.dropna(subset=["bucket_label"])
+    except Exception:
+        return None
+
+
+def _return_to_bucket_label(ret_pct: float) -> str:
+    """Map return % to the correct bucket label. Exact 0% goes to 0%~10% (green/positive side)."""
+    r = float(ret_pct)
+    if r <= -40:
+        return _ANNUAL_RETURN_BIN_LABELS[0]
+    if r <= -30:
+        return _ANNUAL_RETURN_BIN_LABELS[1]
+    if r <= -20:
+        return _ANNUAL_RETURN_BIN_LABELS[2]
+    if r <= -10:
+        return _ANNUAL_RETURN_BIN_LABELS[3]
+    if r < 0:
+        return _ANNUAL_RETURN_BIN_LABELS[4]
+    if r <= 10:
+        return _ANNUAL_RETURN_BIN_LABELS[5]
+    if r <= 20:
+        return _ANNUAL_RETURN_BIN_LABELS[6]
+    if r <= 30:
+        return _ANNUAL_RETURN_BIN_LABELS[7]
+    if r <= 40:
+        return _ANNUAL_RETURN_BIN_LABELS[8]
+    return _ANNUAL_RETURN_BIN_LABELS[9]
+
+
+def _render_annual_returns_histogram():
+    """Render S&P 500 historical annual returns as stacked blocks by 10% buckets (red/green, year: return% in each block)."""
+    ann = _fetch_sp500_annual_returns()
+    if ann is None or len(ann) == 0 or go is None:
+        st.info("S&P 500 annual return data could not be loaded. Try again later.")
+        return
+    bucket_order = list(_ANNUAL_RETURN_BIN_LABELS)
+    ann = ann.sort_values("year").reset_index(drop=True)
+    n_years = len(ann)
+    first_year = int(ann["year"].min())
+    last_year = int(ann["year"].max())
+    # Auto-scale chart height by number of years (smaller multiplier = shorter blocks, shorter chart)
+    height = max(500, min(2400, 180 + n_years * 10))
+    fig = go.Figure()
+    for _, row in ann.iterrows():
+        year = int(row["year"])
+        ret = float(row["return_pct"])
+        bucket = _return_to_bucket_label(ret)
+        color = "#dc2626" if ret < 0 else "#16a34a"
+        fig.add_trace(
+            go.Bar(
+                x=[bucket],
+                y=[1],
+                name=str(year),
+                text=[f"{year}<br>{ret:.1f}%"],
+                textposition="inside",
+                insidetextanchor="middle",
+                textangle=0,
+                textfont=dict(size=13),
+                showlegend=False,
+                marker_color=color,
+                hovertemplate="Year: %{customdata[0]}<br>Return: %{customdata[1]:.2f}%<extra></extra>",
+                customdata=[[year, ret]],
+            )
+        )
+    fig.update_layout(
+        barmode="stack",
+        title=dict(text=f"S&P 500 Annual Returns: {first_year} – {last_year}", font=dict(size=18)),
+        xaxis=dict(
+            title="Return (%)",
+            type="category",
+            categoryorder="array",
+            categoryarray=bucket_order,
+            tickangle=0,
+            tickfont=dict(size=10),
+            fixedrange=True,
+        ),
+        yaxis=dict(title="Number of years", fixedrange=True, dtick=1),
+        template="plotly_white",
+        height=height,
+        margin=dict(t=60, b=110, l=50, r=40),
+        dragmode=False,
+        uniformtext=dict(mode="show", minsize=11),
+    )
+    fig.update_traces(textfont=dict(size=13), selector=dict(type="bar"))
+    fig.update_xaxes(fixedrange=True)
+    fig.update_yaxes(fixedrange=True)
+    st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=True, displaylogo=False, scrollZoom=False, responsive=True))
 
 
 @st.cache_data(ttl=86400)
@@ -467,6 +593,13 @@ if df is not None and len(df) > 0:
     st.markdown(
         "*Short-term crashes are but small waves in decades of history. Stay the course.*"
     )
+    # S&P 500 annual returns histogram (1928–present, 10% buckets, stacked blocks)
+    st.markdown(
+        '<div class="section-heading" style="margin-top:2rem;">S&P 500 Historical Annual Returns</div>',
+        unsafe_allow_html=True,
+    )
+    _render_annual_returns_histogram()
+    st.caption("Each block shows year and return (%). Green = positive, red = negative. Data updates automatically; new years are added when available (e.g. after year-end). Source: Yahoo Finance (^GSPC).")
 else:
     st.info("S&P 500 historical data could not be loaded. Please try again later.")
 

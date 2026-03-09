@@ -1,0 +1,8 @@
+
+powershell update
+
+cd "c:\Users\bluem\OneDrive\Documents\Business\Life\toojar\the steady compass"
+git add app.py
+git status
+git commit -m "Update Weekly Signal caption: once daily at 7 PM ET, 3 stories from past week"
+git push origin main

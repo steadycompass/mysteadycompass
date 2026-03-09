@@ -153,7 +153,7 @@ def _render_annual_returns_histogram():
                 x=[bucket],
                 y=[1],
                 name=str(year),
-                text=[f"{year}<br>{ret:.1f}%"],
+                text=[f"{year}<br>{ret:.1f}"],
                 textposition="inside",
                 insidetextanchor="middle",
                 textangle=0,

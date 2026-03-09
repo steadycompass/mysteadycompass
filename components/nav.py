@@ -249,6 +249,7 @@ def inject_nav_css():
         .js-plotly-plot {{ width: 100% !important; }}
         .js-plotly-plot .svg-container {{ max-width: 100% !important; }}
         [data-testid="stPlotlyChart"] {{ width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; touch-action: pan-y !important; }}
+        [data-testid="stPlotlyChart"] .plotly text {{ font-size: 9px !important; }}
     }}
     @media (max-width: 380px) {{
         .nav-title-text {{ font-size: 1rem !important; }}

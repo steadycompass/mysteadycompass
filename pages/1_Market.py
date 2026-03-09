@@ -181,7 +181,7 @@ def _render_annual_returns_histogram():
         height=height,
         margin=dict(t=60, b=110, l=50, r=40),
         dragmode=False,
-        uniformtext=dict(mode="show", minsize=10),
+        uniformtext=dict(mode="show", minsize=11),
     )
     fig.update_traces(textfont=dict(size=11), selector=dict(type="bar"))
     fig.update_xaxes(fixedrange=True)

@@ -130,60 +130,57 @@ def _return_to_bucket_label(ret_pct: float) -> str:
 
 
 def _render_annual_returns_histogram():
-    """Render S&P 500 historical annual returns as stacked blocks by 10% buckets (red/green, year: return% in each block)."""
+    """Render S&P 500 annual returns with years on Y-axis (mobile-friendly)."""
     ann = _fetch_sp500_annual_returns()
     if ann is None or len(ann) == 0 or go is None:
         st.info("S&P 500 annual return data could not be loaded. Try again later.")
         return
-    bucket_order = list(_ANNUAL_RETURN_BIN_LABELS)
     ann = ann.sort_values("year").reset_index(drop=True)
     n_years = len(ann)
     first_year = int(ann["year"].min())
     last_year = int(ann["year"].max())
-    # Auto-scale chart height by number of years (smaller multiplier = shorter blocks, shorter chart)
-    height = max(500, min(2400, 180 + n_years * 10))
-    fig = go.Figure()
-    for _, row in ann.iterrows():
-        year = int(row["year"])
-        ret = float(row["return_pct"])
-        bucket = _return_to_bucket_label(ret)
-        color = "#dc2626" if ret < 0 else "#16a34a"
-        fig.add_trace(
-            go.Bar(
-                x=[bucket],
-                y=[1],
-                name=str(year),
-                text=[f"{year}<br>{ret:.1f}"],
-                textposition="inside",
-                insidetextanchor="middle",
-                textangle=0,
-                textfont=dict(size=11),
-                showlegend=False,
-                marker_color=color,
-                hovertemplate="Year: %{customdata[0]}<br>Return: %{customdata[1]:.2f}%<extra></extra>",
-                customdata=[[year, ret]],
-            )
+    # Auto-scale chart height by number of years
+    height = max(520, min(2600, 140 + n_years * 20))
+    ann["year_str"] = ann["year"].astype(str)
+    ann["color"] = np.where(ann["return_pct"] < 0, "#dc2626", "#16a34a")
+
+    fig = go.Figure(
+        go.Bar(
+            x=ann["return_pct"],
+            y=ann["year_str"],
+            orientation="h",
+            marker_color=ann["color"],
+            text=ann["return_pct"].map(lambda v: f"{v:.1f}"),
+            textposition="outside",
+            textfont=dict(size=10),
+            cliponaxis=False,
+            hovertemplate="Year: %{y}<br>Return: %{x:.2f}%<extra></extra>",
+            showlegend=False,
         )
+    )
     fig.update_layout(
-        barmode="stack",
         title=dict(text=f"S&P 500 Annual Returns: {first_year} – {last_year}", font=dict(size=18)),
         xaxis=dict(
             title="Return (%)",
-            type="category",
-            categoryorder="array",
-            categoryarray=bucket_order,
             tickangle=0,
             tickfont=dict(size=10),
             fixedrange=True,
+            zeroline=True,
+            zerolinecolor="#475569",
+            zerolinewidth=1,
         ),
-        yaxis=dict(title="Number of years", fixedrange=True, dtick=1),
+        yaxis=dict(
+            title="Year",
+            fixedrange=True,
+            automargin=True,
+            categoryorder="array",
+            categoryarray=ann["year_str"].tolist(),
+        ),
         template="plotly_white",
         height=height,
-        margin=dict(t=60, b=110, l=50, r=40),
+        margin=dict(t=60, b=80, l=70, r=70),
         dragmode=False,
-        uniformtext=dict(mode="show", minsize=11),
     )
-    fig.update_traces(textfont=dict(size=11), selector=dict(type="bar"))
     fig.update_xaxes(fixedrange=True)
     fig.update_yaxes(fixedrange=True)
     st.plotly_chart(fig, use_container_width=True, config=dict(displayModeBar=True, displaylogo=False, scrollZoom=False, responsive=True))
@@ -600,7 +597,7 @@ if df is not None and len(df) > 0:
         unsafe_allow_html=True,
     )
     _render_annual_returns_histogram()
-    st.caption("Each block shows year and return (%). Green = positive, red = negative. Data updates automatically; new years are added when available (e.g. after year-end). Source: Yahoo Finance (^GSPC).")
+    st.caption("Y-axis shows year and X-axis shows annual return (%). Green = positive, red = negative. Data updates automatically; new years are added when available (e.g. after year-end). Source: Yahoo Finance (^GSPC).")
 else:
     st.info("S&P 500 historical data could not be loaded. Please try again later.")
 

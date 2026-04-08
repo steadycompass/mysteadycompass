@@ -203,7 +203,8 @@ def _build_drawdown_forward_table():
     close = daily["Close"]
 
     # Quarterly close and quarter-over-quarter return (%)
-    q_close = close.resample("Q").last()
+    # Use explicit quarter-end frequency for newer pandas versions.
+    q_close = close.resample("QE").last()
     q_ret = q_close.pct_change() * 100.0  # quarterly drop when negative
 
     # Worst 15 quarters (most negative)

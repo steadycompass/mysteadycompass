@@ -89,7 +89,8 @@ def _fetch_sp500_annual_returns():
         if close.index.tz is not None:
             close = close.tz_localize(None)
         close = close.sort_index()
-        year_end = close.resample("Y").last().dropna()
+        # Use explicit year-end frequency for newer pandas versions.
+        year_end = close.resample("YE").last().dropna()
         if len(year_end) < 2:
             return None
         ret_pct = year_end.pct_change().dropna() * 100.0
